@@ -1,4 +1,3 @@
-import json
 
 import requests
 
@@ -44,12 +43,21 @@ class Plugins(object):
     def group_message(self, time, self_id, sub_type, message_id, group_id, user_id, anonymous, message, raw_message,
                       font, sender):
         api_url = "https://api.dzzui.com/api/tiangou?format=json"
-        response = requests.get(api_url)
-        response_data = json.loads(response.text)
-        if response_data['code'] == 200:
-            need_send_message = ""
-            need_send_message += self.util.cq_reply(message_id)
-            need_send_message += f"{response_data['time']}\n{response_data['text']}"
-            self.util.send_group_msg(self.auth, group_id, need_send_message)
+        if raw_message == "舔狗日记":
+            try:
+                response = requests.get(api_url)
+                response_data = response.json()
+                if response_data['code'] == 200:
+                    need_send_message = ""
+                    need_send_message += self.util.cq_reply(message_id)
+                    need_send_message += f"{response_data['time']}\n{response_data['text']}"
+                    self.util.send_group_msg(self.auth, group_id, need_send_message)
+                    return True
+                else:
+                    self.util.send_group_msg(self.auth, group_id, "接口坏了你当不了舔狗了!")
+                    return True
+            except:
+                self.util.send_group_msg(self.auth, group_id, "接口坏了你当不了舔狗了!")
+                return True
         else:
-            self.util.send_group_msg(self.auth, group_id, "接口坏了你当不了舔狗了!")
+            return False

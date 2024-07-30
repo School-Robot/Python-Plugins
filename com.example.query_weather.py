@@ -1,7 +1,6 @@
 """
 查询指定城市未来7天的天气
 """
-import json
 
 import requests
 
@@ -53,18 +52,22 @@ class Plugin(object):
             if msg[0] == '查询天气':
                 if len(msg) == 2:
                     full_url = API_PRE_FIX + str(msg[1])
-                    response = json.loads(requests.get(full_url).text)
-                    if response['code'] == 500:
+                    try:
+                        response = requests.get(full_url).json()
+                        if response['code'] == 500:
+                            self.util.send_group_msg(self.auth, group_id, "接口错误，请重试")
+                        else:
+                            res = response['result']['forecast_list'][1:5]
+                            need_send_message = ""
+                            need_send_message += self.util.cq_reply(message_id)
+                            for i in res:
+                                need_send_message += f"日期：{i['date']}  天气：{i['condition']} 温度：{i['low_temperature']}~{i['high_temperature']}"
+                                need_send_message += "\n"
+                            self.util.send_group_msg(self.auth, group_id, need_send_message)
+                        return True
+                    except:
                         self.util.send_group_msg(self.auth, group_id, "接口错误，请重试")
-                    else:
-                        res = response['result']['forecast_list'][1:5]
-                        need_send_message = ""
-                        need_send_message += self.util.cq_reply(message_id)
-                        for i in res:
-                            need_send_message += f"日期：{i['date']}  天气：{i['condition']} 温度：{i['low_temperature']}~{i['high_temperature']}"
-                            need_send_message += "\n"
-                        self.util.send_group_msg(self.auth, group_id, need_send_message)
-                    return True
+                        return True
                 else:
                     self.util.send_group_msg(self.auth, group_id, "请按照格式输入，如：查询天气 北京")
                     return True
