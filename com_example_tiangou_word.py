@@ -8,7 +8,7 @@ plugin_author = "Z"
 plugin_desc = "舔狗日记"
 
 
-class Plugins(object):
+class Plugin(object):
     plugin_methods = {'register': {'priority': 30000, 'func': 'register', 'desc': '注册插件'},
                       'enable': {'priority': 30000, 'func': 'enable', 'desc': '启用插件'},
                       'disable': {'priority': 30000, 'func': 'disable', 'desc': '禁用插件'},
