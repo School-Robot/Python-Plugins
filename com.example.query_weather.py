@@ -5,33 +5,39 @@ import json
 
 import requests
 
-plugin_name="query_weather"
-plugin_id="com.example.query_weather"
-plugin_version="1.0.0"
-plugin_author="Z"
-plugin_desc="查询天气"
+plugin_name = "query_weather"
+plugin_id = "com.example.query_weather"
+plugin_version = "1.0.0"
+plugin_author = "Z"
+plugin_desc = "查询天气"
 
 API_PRE_FIX = "https://api.oioweb.cn/api/weather/weather?city_name="
 
+
 class Plugin(object):
-    plugin_methods={'register':{'priority':30000,'func':'register','desc':'注册插件'},'enable':{'priority':30000,'func':'enable','desc':'启用插件'},'disable':{'priority':30000,'func':'disable','desc':'禁用插件'},'unregister':{'priority':30000,'func':'unregister','desc':'卸载插件'},'group_message':{'priority':30000,'func':'group_message','desc':'群消息处理'}}
-    plugin_commands={}
-    plugin_auths={'send_group_msg'}
-    auth=''
-    log=None
-    status=None
-    bot=None
-    util=None
-    dir=None
-    def register(self,logger,util,bot,dir):
-        self.log=logger
-        self.bot=bot
-        self.util=util
-        self.dir=dir
+    plugin_methods = {'register': {'priority': 30000, 'func': 'register', 'desc': '注册插件'},
+                      'enable': {'priority': 30000, 'func': 'enable', 'desc': '启用插件'},
+                      'disable': {'priority': 30000, 'func': 'disable', 'desc': '禁用插件'},
+                      'unregister': {'priority': 30000, 'func': 'unregister', 'desc': '卸载插件'},
+                      'group_message': {'priority': 30000, 'func': 'group_message', 'desc': '群消息处理'}}
+    plugin_commands = {}
+    plugin_auths = {'send_group_msg'}
+    auth = ''
+    log = None
+    status = None
+    bot = None
+    util = None
+    dir = None
+
+    def register(self, logger, util, bot, dir):
+        self.log = logger
+        self.bot = bot
+        self.util = util
+        self.dir = dir
         self.log.info("Plugin register")
 
-    def enable(self,auth):
-        self.auth=auth
+    def enable(self, auth):
+        self.auth = auth
         self.log.info("Plugin enable")
 
     def disable(self):
@@ -39,11 +45,12 @@ class Plugin(object):
 
     def unregister(self):
         self.log.info("Plugin unregister")
-    
-    def group_message(self,time,self_id,sub_type,message_id,group_id,user_id,anonymous,message,raw_message,font,sender):
+
+    def group_message(self, time, self_id, sub_type, message_id, group_id, user_id, anonymous, message, raw_message,
+                      font, sender):
         if raw_message.startswith('查询天气'):
-            msg=raw_message.split(' ')
-            if msg[0]=='查询天气':
+            msg = raw_message.split(' ')
+            if msg[0] == '查询天气':
                 if len(msg) == 2:
                     full_url = API_PRE_FIX + str(msg[1])
                     response = json.loads(requests.get(full_url).text)
