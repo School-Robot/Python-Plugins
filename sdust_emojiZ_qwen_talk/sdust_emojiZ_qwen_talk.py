@@ -1,5 +1,6 @@
 import json
 import os
+import configparser
 
 """"
 本插件需要openAI sdk 与DashScope SDK
@@ -51,6 +52,11 @@ class Plugin(object):
 
     def group_message(self, time, self_id, sub_type, message_id, group_id, user_id, anonymous, message, raw_message,
                       font, sender):
+        config_parser = configparser.ConfigParser()
+        config_parser.read("sk_config.ini")
+        api_key = config_parser.get('QwenSk', 'qwen_sk')
+        if api_key == "":
+            return False
         if raw_message.startswith("/gpt "):
             try:
                 request_message = raw_message[5:]
@@ -74,4 +80,3 @@ class Plugin(object):
             self.util.send_group_msg(self.auth, group_id, reply_info)
             return True
         return False
-
