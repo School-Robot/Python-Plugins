@@ -61,7 +61,7 @@ class Plugin(object):
             try:
                 request_message = raw_message[5:]
                 client = OpenAI(
-                    api_key=os.getenv("qwen-sk"),
+                    api_key=api_key,
                     base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",  # 填写DashScope服务的base_url
                 )
                 completion = client.chat.completions.create(
