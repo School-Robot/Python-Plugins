@@ -76,6 +76,7 @@ class Plugin(object):
                     api_key=self.api_key,
                     base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",  # 填写DashScope服务的base_url
                 )
+
                 completion = client.chat.completions.create(
                     model="qwen-turbo",
                     messages=[
