@@ -69,6 +69,7 @@ class Plugin(object):
                 reply_info = json_data['choices'][0]['message']['content']
             except Exception:
                 reply_info = "接口错误 请重试"
+                self.util.send_group_msg(self.auth, group_id, reply_info)
                 return False
             self.util.send_group_msg(self.auth, group_id, reply_info)
             return True
