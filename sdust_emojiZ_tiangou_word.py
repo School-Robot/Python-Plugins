@@ -2,7 +2,7 @@
 import requests
 
 plugin_name = "tiangou_word"
-plugin_id = "com.example.tiangou_word"
+plugin_id = "sdust.emojiZ.tiangou_word"
 plugin_version = "1.0.0"
 plugin_author = "Z"
 plugin_desc = "舔狗日记"
