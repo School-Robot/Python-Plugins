@@ -51,9 +51,9 @@ class Plugin(object):
 
     def group_message(self, time, self_id, sub_type, message_id, group_id, user_id, anonymous, message, raw_message,
                       font, sender):
-        if raw_message.startwith("/gpt "):
+        if raw_message.startswith("/gpt "):
             try:
-                request_message = raw_message.replace("/gpt ", "")
+                request_message = raw_message[5:]
                 client = OpenAI(
                     api_key=os.getenv("qwen-sk"),
                     base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",  # 填写DashScope服务的base_url
@@ -69,5 +69,7 @@ class Plugin(object):
                 reply_info = json_data['choices'][0]['message']['content']
             except Exception:
                 reply_info = "接口错误 请重试"
+                return False
             self.util.send_group_msg(self.auth, group_id, reply_info)
+            return True
 
