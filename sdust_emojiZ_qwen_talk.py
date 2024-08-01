@@ -67,16 +67,13 @@ class Plugin(object):
 
     def group_message(self, time, self_id, sub_type, message_id, group_id, user_id, anonymous, message, raw_message,
                       font, sender):
-        config_parser = configparser.ConfigParser()
-        config_parser.read("sk_config.ini")
-        api_key = config_parser.get('QwenSk', 'qwen_sk')
-        if api_key == "":
+        if self.api_key == "":
             return False
         if raw_message.startswith("/gpt "):
             try:
                 request_message = raw_message[5:]
                 client = OpenAI(
-                    api_key=api_key,
+                    api_key=self.api_key,
                     base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",  # 填写DashScope服务的base_url
                 )
                 completion = client.chat.completions.create(
