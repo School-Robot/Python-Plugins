@@ -10,7 +10,7 @@ import configparser
 """
 
 plugin_name = "qwen_talk"
-plugin_id = "com.example.qwen_talk"
+plugin_id = "sdust.emojiZ.qwen_talk"
 plugin_version = "1.0.0"
 plugin_author = "Z"
 plugin_desc = "一款基于通译千问大模型的AI对话插件"

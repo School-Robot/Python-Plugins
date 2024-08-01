@@ -5,7 +5,7 @@
 import requests
 
 plugin_name = "query_weather"
-plugin_id = "com.example.query_weather"
+plugin_id = "sdust.emojiZ.query_weather"
 plugin_version = "1.0.0"
 plugin_author = "Z"
 plugin_desc = "查询天气"
