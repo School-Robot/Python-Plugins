@@ -73,4 +73,5 @@ class Plugin(object):
                 return False
             self.util.send_group_msg(self.auth, group_id, reply_info)
             return True
+        return False
 
