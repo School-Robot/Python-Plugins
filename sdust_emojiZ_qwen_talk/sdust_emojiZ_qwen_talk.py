@@ -6,7 +6,7 @@ import configparser
 本插件需要openAI sdk 与DashScope SDK
 以及阿里云通译千问模型sk
 使用前请确保以具备此三者
-并将sk设置为环境变量qwen-sk
+并将讲sk写入配置文件
 """
 
 plugin_name = "qwen_talk"
