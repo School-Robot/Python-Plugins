@@ -42,6 +42,21 @@ class Plugin(object):
 
     def enable(self, auth):
         self.auth = auth
+        config_file_name = 'sk_config.ini'
+        config_path = os.path.join(self.dir, config_file_name)
+        config = configparser.ConfigParser()
+        if not os.path.exists(config_path):
+            my_sk = ""
+            config['QwenSK'] = {
+                "qwen_sk": my_sk
+            }
+            # 写入文件
+            with open(config_path, 'w') as configfile:
+                config.write(configfile)
+            self.api_key = my_sk
+        else:
+            config.read(config_path)
+            self.api_key = config.get("QwenSK", "qwen_sk", fallback="")
         self.log.info("Plugin enable")
 
     def disable(self):
