@@ -11,7 +11,7 @@ import configparser
 
 plugin_name = "qwen_talk"
 plugin_id = "sdust.emojiZ.qwen_talk"
-plugin_version = "1.0.0"
+plugin_version = "1.0.1"
 plugin_author = "Z"
 plugin_desc = "一款基于通译千问大模型的AI对话插件"
 
@@ -70,6 +70,7 @@ class Plugin(object):
         if self.api_key == "":
             return False
         if raw_message.startswith("/gpt "):
+            reply_info = self.util.cq_reply(message_id)
             try:
                 request_message = raw_message[5:]
                 client = OpenAI(
@@ -82,12 +83,13 @@ class Plugin(object):
                     messages=[
                         {'role': 'user', 'content': request_message}],
                     temperature=0.8,
-                    top_p=0.8
+                    top_p=0.8,
+                    extra_body={"enable_search": True}
                 )
                 json_data = json.loads(completion.model_dump_json())
-                reply_info = json_data['choices'][0]['message']['content']
+                reply_info += json_data['choices'][0]['message']['content']
             except Exception:
-                reply_info = "接口错误 请重试"
+                reply_info += "接口错误 请重试"
                 self.util.send_group_msg(self.auth, group_id, reply_info)
                 return False
             self.util.send_group_msg(self.auth, group_id, reply_info)
