@@ -7,7 +7,7 @@ import re
 from urllib.parse import quote
 
 plugin_name = "search_music"
-plugin_id = "X1a0Yu_tiangou_word"
+plugin_id = "X1a0Yu.search.music"
 plugin_version = "1.0.0"
 plugin_author = "X1a0Yu"
 plugin_desc = "点歌"
