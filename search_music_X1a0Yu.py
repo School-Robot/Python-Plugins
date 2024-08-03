@@ -46,48 +46,7 @@ class Plugin(object):
     def unregister(self):
         self.log.info("Plugin unregister")
 
-    # def get_music_content():
-    # musicname = input("请输入你要查询的音乐名：")
-    # url = f"http://api.caonmtx.cn/api/wangyi.php?msg={musicname}"
-    # response = requests.get(url)
-    # content = response.text
-    # pattern = r'"content": \[([\s\S]*?)\]'
-    # result = re.search(pattern, content)
-    # if result:
-    #     music_list = result.group(1).strip().split(',')
-    #     for item in music_list:
-    #         print(item.strip())
-    # else:
-    #     print("未找到匹配的内容")
-
-    # def group_message(self, time, self_id, sub_type, message_id, group_id, user_id, anonymous, message, raw_message,
-    #                 font, sender):
-
-    # API_PRE_FIX = "http://api.caonmtx.cn/api/wangyi.php?msg="
-    # API_PRE_FIX1 = "&n=1"
-    #     if raw_message.startswith('音乐'):
-    #         res = raw_message.replace('音乐-', '', 1)
-    #         full_url = API_PRE_FIX + res + API_PRE_FIX1
-    #         try:
-    #             response = requests.get(full_url).json()
-    #             if response['code'] == 500:
-    #                 self.util.send_group_msg(self.auth, group_id, "接口1错误，请重试")
-    #             else:
-    #                 res = response['data'][1:5]
-    #                 need_send_message = ""
-    #                 need_send_message += self.util.cq_reply(message_id)
-    #                 for i in res:
-    #                     need_send_message += f"{i['src']}"
-    #                     need_send_message += "\n"
-    #                 self.util.send_group_msg(self.auth, group_id, need_send_message)
-    #             return True
-    #         except:
-    #             self.util.send_group_msg(self.auth, group_id, "接口2错误，请重试")
-    #             return True
-    #     else:
-    #         return False
-
-
+    
     def group_message(self, time, self_id, sub_type, message_id, group_id, user_id, anonymous, message, raw_message,
                     font, sender):
 
