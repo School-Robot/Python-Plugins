@@ -130,28 +130,27 @@ class Plugin(object):
                     music_list = cached_data['search_results']
                     if 0 <= index < len(music_list):
                         music = music_list[index]
-                        message_content = ""
-                        success = False
                         if format_type == "封面":
                             image_url = music['pic']
-                            success, ret_data = self.util.send_group_msg(self.auth, group_id, {"type": "image", "data": {"file": image_url, "timeout": 30, "cache": 0}})
+                            self.util.send_group_msg(self.auth, group_id, {"type": "image", "data": {"file": image_url, "timeout": 30, "cache": 0}})
+                            self.delete_msg(cached_data['message_id'])
                         elif format_type == "链接":
-                            message_content = music['url']
+                            self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": music['url']}})
+                            self.delete_msg(cached_data['message_id'])
                         elif format_type == "歌词":
-                            message_content = music['lrc']
+                            self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": music['lrc']}})
+                            self.delete_msg(cached_data['message_id'])
                         elif format_type == "歌词图片":
                             server = "netease" if cached_data['is_netease'] else "tencent"
                             lrc_image_url = f"https://music.renil.cc/?auth=V61TFH9RfxW8VSNM&server={server}&type=BotImage&id={music['id']}"
-                            success, ret_data = self.util.send_group_msg(self.auth, group_id, {"type": "image", "data": {"file": lrc_image_url, "timeout": 30, "cache": 0}})
+                            self.util.send_group_msg(self.auth, group_id, {"type": "image", "data": {"file": lrc_image_url, "timeout": 30, "cache": 0}})
+                            self.delete_msg(cached_data['message_id'])
                         elif format_type == "语音":
-                            success, ret_data = self.util.send_group_msg(self.auth, group_id, {"type": "record", "data": {"file": music['url']}})
+                            self.util.send_group_msg(self.auth, group_id, {"type": "record", "data": {"file": music['url']}})
+                            self.delete_msg(cached_data['message_id'])
                         else:
-                            self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "格式错误，请重新输入"}})
-                        
-                        if message_content:
-                            success, ret_data = self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": message_content}})
-                        if success:
-                            self.util.delete_msg(self.auth, cached_data['message_id'])
+                            self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "无效的格式类型，请重新输入。"}})
+                            return True
                         self.delete_cache(cache_key)
                     else:
                         self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "无效的序号"}})
