@@ -150,7 +150,7 @@ class Plugin(object):
             for idx, music in enumerate(search_results):
                 response_msg += f"{idx + 1} - {music['name']} - {music['artist']}\n"
             response_msg += "请输入序号和发送格式类型，比如：1 封面、1 链接、1 歌词、1 歌词图片、1 语音"
-            success, ret_data = self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": response_msg}})
+            success, ret_data = self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": response_msg}}, False, 15)
             if success:
                 message_id = ret_data['message_id']
                 self.save_to_cache(cache_key, {
