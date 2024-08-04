@@ -14,7 +14,7 @@ class Plugin(object):
     }
     plugin_commands = {
         'music_search': 'music_search_command',
-        'help': 'music_search set中的音乐搜索为music_search',
+        'help': 'music_search set <管理员QQ号> 命令设置管理员',
     }
     plugin_auths = {'send_group_msg', 'delete_msg'}
     auth = ''
