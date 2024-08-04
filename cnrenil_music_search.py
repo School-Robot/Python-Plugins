@@ -3,7 +3,6 @@ import os
 import tempfile
 import hashlib
 import requests
-import atexit
 
 class Plugin(object):
     plugin_methods = {
@@ -15,9 +14,7 @@ class Plugin(object):
     }
     plugin_commands = {
         'music_search': 'music_search_command',
-        'help': '音乐搜索 set中的音乐搜索为music_search',
-        'netease_music': 'handle_music_command',
-        'qq_music': 'handle_music_command'
+        'help': 'music_search set中的音乐搜索为music_search',
     }
     plugin_auths = {'send_group_msg', 'delete_msg'}
     auth = ''
@@ -40,9 +37,6 @@ class Plugin(object):
     engine = None
     session = None
 
-    def __init__(self):
-        atexit.register(self.clear_temp_cache)
-
     def register(self, logger, util, bot, dir):
         self.log = logger
         self.bot = bot
@@ -50,6 +44,8 @@ class Plugin(object):
         self.dir = dir
         self.config_path = os.path.join(self.dir, 'config.json')
         self.load_config()
+        if self.config['manager']==0:
+            self.log.warning("未设置管理员，在控制台使用music_search set <管理员QQ号> 命令设置管理员")
         self.log.info("Plugin register")
         self.clear_temp_cache()
 
@@ -71,29 +67,18 @@ class Plugin(object):
     def group_message(self, time, self_id, sub_type, message_id, group_id, user_id, anonymous, message, raw_message, font, sender):
         if raw_message.startswith(self.config['cmd']['admin']):
             if user_id == self.config['manager']:
-                cmds = raw_message.split(' ')
-                if len(cmds) == 2:
-                    if cmds[1] == "启用":
-                        if group_id in self.config['disabled']:
-                            self.config['disabled'].remove(group_id)
-                            self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "音乐插件已启用"}})
-                        else:
-                            self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "音乐插件已经是启用状态"}})
-                    elif cmds[1] == "禁用":
-                        if group_id not in self.config['disabled']:
-                            self.config['disabled'].append(group_id)
-                            self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "音乐插件已禁用"}})
-                        else:
-                            self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "音乐插件已经是禁用状态"}})
-                    else:
-                        self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "无效的命令"}})
+                if group_id in self.config['disabled']:
+                    self.config['disabled'].remove(group_id)
+                    self.util.send_group_msg(self.auth, group_id, "音乐插件已启用")
                 else:
-                    self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "命令格式错误"}})
+                    self.config['disabled'].append(group_id)
+                    self.util.send_group_msg(self.auth, group_id, "音乐插件已禁用")
+
             else:
                 self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "无权限"}})
             return True
 
-        if group_id in self.config.get('disabled', []):
+        if group_id in self.config['disabled']:
             return False
 
         cache_key = self.get_cache_key(group_id, user_id)
@@ -104,8 +89,9 @@ class Plugin(object):
             if len(cmd_parts) == 1:
                 # 没有额外参数，维持原有逻辑
                 if not cached_data:
-                    self.save_to_cache(cache_key, {'status': 1, 'stage': 'waiting_for_music_name', 'is_netease': raw_message.startswith(self.config['cmd']['netease'])})
+                    self.save_to_cache(cache_key, {'stage': 'waiting_for_music_name', 'is_netease': raw_message.startswith(self.config['cmd']['netease'])})
                     self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "请输入音乐名称"}})
+                    return True
             else:
                 # 直接处理搜索请求
                 music_name = cmd_parts[1].strip()
@@ -115,15 +101,13 @@ class Plugin(object):
                 return True
 
         if cached_data:
-            status = cached_data.get('status')
-
-            if status == 1 and cached_data['stage'] == 'waiting_for_music_name':
+            if cached_data['stage'] == 'waiting_for_music_name':
                 music_name = raw_message
                 search_results = self.search_music(music_name, cached_data['is_netease'])
                 self.handle_search_results(search_results, group_id, cache_key, cached_data['is_netease'], time, user_id)
                 return True
 
-            if status == 2 and cached_data['stage'] == 'waiting_for_format_selection':
+            if cached_data['stage'] == 'waiting_for_format_selection':
                 if raw_message.split()[0].isdigit() and len(raw_message.split()) == 2:
                     index, format_type = raw_message.split()
                     index = int(index) - 1
@@ -133,21 +117,21 @@ class Plugin(object):
                         if format_type == "封面":
                             image_url = music['pic']
                             self.util.send_group_msg(self.auth, group_id, {"type": "image", "data": {"file": image_url, "timeout": 30, "cache": 0}})
-                            self.delete_msg(cached_data['message_id'])
+                            self.util.delete_msg(self.auth, cached_data['message_id'])
                         elif format_type == "链接":
                             self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": music['url']}})
-                            self.delete_msg(cached_data['message_id'])
+                            self.util.delete_msg(self.auth, cached_data['message_id'])
                         elif format_type == "歌词":
                             self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": music['lrc']}})
-                            self.delete_msg(cached_data['message_id'])
+                            self.util.delete_msg(self.auth, cached_data['message_id'])
                         elif format_type == "歌词图片":
                             server = "netease" if cached_data['is_netease'] else "tencent"
                             lrc_image_url = f"https://music.renil.cc/?auth=V61TFH9RfxW8VSNM&server={server}&type=BotImage&id={music['id']}"
                             self.util.send_group_msg(self.auth, group_id, {"type": "image", "data": {"file": lrc_image_url, "timeout": 30, "cache": 0}})
-                            self.delete_msg(cached_data['message_id'])
+                            self.util.delete_msg(self.auth, cached_data['message_id'])
                         elif format_type == "语音":
                             self.util.send_group_msg(self.auth, group_id, {"type": "record", "data": {"file": music['url']}})
-                            self.delete_msg(cached_data['message_id'])
+                            self.util.delete_msg(self.auth, cached_data['message_id'])
                         else:
                             self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "无效的格式类型，请重新输入。"}})
                             return True
@@ -171,7 +155,6 @@ class Plugin(object):
                 message_id = ret_data['message_id']
                 self.save_to_cache(cache_key, {
                     'stage': 'waiting_for_format_selection',
-                    'status': 2,
                     'music_name': search_results[0]['name'],
                     'search_results': search_results,
                     'is_netease': is_netease,
