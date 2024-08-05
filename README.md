@@ -73,3 +73,6 @@
 - `链接`  获取歌曲播放链接
 - `语音`  在群内发送歌曲的语音
 - `歌词图片`  歌曲歌词图片生成
+
+API接口源码(修改后的meting-api)：[![GitHub](https://img.shields.io/badge/GitHub-cnrenil/meting--api-blue)](https://github.com/cnrenil/meting-api)
+
