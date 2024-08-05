@@ -298,7 +298,7 @@ class Plugin(object):
 
 plugin_name = "音乐搜索插件"
 plugin_id = "cc.renil.music_search"
-plugin_version = "1.0.0"
+plugin_version = "1.1.0"
 plugin_author = "cnrenil和gpt"
 plugin_desc = "网易云和QQ音乐搜索回复插件"
 
