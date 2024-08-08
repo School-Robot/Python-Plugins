@@ -67,7 +67,8 @@ class Plugin(object):
 		global last_time
 		burp0_url = "https://tieba.baidu.com:443/mg/f/getFrsData?kw=%E4%BF%A1%E9%98%B3%E5%B8%88%E8%8C%83%E5%AD%A6%E9%99%A2&rn=10&pn=1&is_good=0&cid=0&sort_type=1&fr=sharewise&default_pro=0&only_thread_list=0&qq-pf-to=pcqq.c2c"
 		burp0_cookies = {
-			" ab_sr": "1.0.1_NTdmOTUzMjM1ODBiZGIwYTkxZTJmM2M5NmE5NGY5MzU0OWRmZWNlNTI5NTI2NDdlNTQxMTRjOGU0OTNkZjg0YzM0ODg4YmMwY2Y1NThiZWQyOGU0NGY3ZmViMWVkOTc5OTMwNjgwOWE2MzY3Njg5YmE0NTZlZGQxNDkxMmJiZTMzYWM3NDg0ODA5OGQ5YzRmYTUwODI1NDM0ZGZiOGYwMjg5NzBkZGMwYzliZDllZmU3YmQwZmUxZmVjYTk1ZDgx"}
+			" ab_sr": "1.0.1_NTdmOTUzMjM1ODBiZGIwYTkxZTJmM2M5NmE5NGY5MzU0OWRmZWNlNTI5NTI2NDdlNTQxMTRjOGU0OTNkZjg0YzM0ODg4YmMwY2Y1NThiZWQyOGU0NGY3ZmViMWVkOTc5OTMwNjgwOWE2MzY3Njg5YmE0NTZlZGQxNDkxMmJiZTMzYWM3NDg0ODA5OGQ5YzRmYTUwODI1NDM0ZGZiOGYwMjg5NzBkZGMwYzliZDllZmU3YmQwZmUxZmVjYTk1ZDgx"
+		}
 		burp0_headers = {
 			"Connection": "close", "Cache-Control": "max-age=0",
 			"sec-ch-ua": "\"Not)A;Brand\";v=\"99\", \"Google Chrome\";v=\"127\", \"Chromium\";v=\"127\"",
@@ -78,7 +79,8 @@ class Plugin(object):
 			"Sec-Fetch-Site": "none", "Sec-Fetch-Mode": "navigate", "Sec-Fetch-User": "?1",
 			"Sec-Fetch-Dest": "document", "Accept-Encoding": "gzip, deflate",
 			"Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8"
-			}
+		}
+		
 		response = requests.get(burp0_url, headers=burp0_headers, cookies=burp0_cookies)
 		response.close()
 
