@@ -58,6 +58,9 @@ class Plugin(object):
                 'enabled': True,
                 'trigger': '语音'
             }
+        },
+        'global_settings': {
+            'auto_recall': True
         }
     }
     engine = None
@@ -93,12 +96,50 @@ class Plugin(object):
     def group_message(self, time, self_id, sub_type, message_id, group_id, user_id, anonymous, message, raw_message, font, sender):
         if raw_message.startswith(self.config['cmd']['admin']):
             if user_id == self.config['manager']:
-                if group_id in self.config['disabled']:
-                    self.config['disabled'].remove(group_id)
-                    self.util.send_group_msg(self.auth, group_id, "音乐插件已启用")
-                else:
-                    self.config['disabled'].append(group_id)
-                    self.util.send_group_msg(self.auth, group_id, "音乐插件已禁用")
+                cmd_parts = raw_message.split()
+                admin_cmd = self.config['cmd']['admin']
+                help_message = (
+                    f"{admin_cmd} 帮助 - 显示此帮助信息\n"
+                    f"{admin_cmd} 自动撤回 - 切换自动撤回功能的开启或关闭\n"
+                    f"{admin_cmd} 功能 <触发器> - 切换指定功能的启用或禁用\n"
+                    f"{admin_cmd} 切换 - 切换本群的插件启用状态\n"
+                    f"{admin_cmd} 查看配置 - 发送当前配置的 JSON\n"
+                    "\n触发器包括: " + "、".join([details['trigger'] for details in self.config['features'].values()])
+                )
+
+                if len(cmd_parts) == 1:
+                    self.util.send_group_msg(self.auth, group_id, help_message)
+                elif len(cmd_parts) > 1:
+                    sub_cmd = cmd_parts[1]
+
+                    if sub_cmd == "切换":
+                        if group_id in self.config['disabled']:
+                            self.config['disabled'].remove(group_id)
+                            self.util.send_group_msg(self.auth, group_id, "音乐插件已启用")
+                        else:
+                            self.config['disabled'].append(group_id)
+                            self.util.send_group_msg(self.auth, group_id, "音乐插件已禁用")
+                    elif sub_cmd == "自动撤回":
+                        self.config['global_settings']['auto_recall'] = not self.config['global_settings']['auto_recall']
+                        status = "开启" if self.config['global_settings']['auto_recall'] else "关闭"
+                        self.util.send_group_msg(self.auth, group_id, f"自动撤回已{status}")
+                    elif sub_cmd == "查看配置":
+                        formatted_config = json.dumps(self.config, indent=4, ensure_ascii=False)
+                        self.util.send_group_msg(self.auth, group_id, f"当前配置:\n{formatted_config}")
+                    elif sub_cmd == "功能" and len(cmd_parts) > 2:
+                        trigger = cmd_parts[2]
+                        for feature, details in self.config['features'].items():
+                            if details['trigger'] == trigger:
+                                details['enabled'] = not details['enabled']
+                                status = "启用" if details['enabled'] else "禁用"
+                                self.util.send_group_msg(self.auth, group_id, f"{trigger} 功能已{status}")
+                                break
+                        else:
+                            self.util.send_group_msg(self.auth, group_id, "无效的功能触发器")
+                    elif sub_cmd == "帮助":
+                        self.util.send_group_msg(self.auth, group_id, help_message)
+                    else:
+                        self.util.send_group_msg(self.auth, group_id, "无效的子命令")
             else:
                 self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "无权限"}})
             return True
@@ -131,40 +172,66 @@ class Plugin(object):
                 return True
 
             if cached_data['stage'] == 'waiting_for_format_selection':
+                if 'error_count' not in cached_data:
+                    cached_data['error_count'] = 0
                 if raw_message.split()[0].isdigit() and len(raw_message.split()) == 2:
                     index, selected_format = raw_message.split()
                     index = int(index) - 1
                     music_list = cached_data['search_results']
                     if 0 <= index < len(music_list):
                         music = music_list[index]
+                        msg_segments = []
                         if selected_format == self.config['features']['cover']['trigger']:
                             image_url = music['pic']
-                            self.util.send_group_msg(self.auth, group_id, {"type": "image", "data": {"file": image_url, "timeout": 30, "cache": 0}})
-                            self.util.delete_msg(self.auth, cached_data['message_id'])
+                            msg_segments.append({
+                                "type": "image",
+                                "data": {"file": image_url, "timeout": 30, "cache": 0}
+                            })
                         elif selected_format == self.config['features']['link']['trigger']:
-                            self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": music['url']}})
-                            self.util.delete_msg(self.auth, cached_data['message_id'])
+                            msg_segments.append({
+                                "type": "text",
+                                "data": {"text": music['url']}
+                            })
                         elif selected_format == self.config['features']['lyrics']['trigger']:
-                            self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": music['lrc']}})
-                            self.util.delete_msg(self.auth, cached_data['message_id'])
+                            msg_segments.append({
+                                "type": "text",
+                                "data": {"text": music['lrc']}
+                            })
                         elif selected_format == self.config['features']['lyrics_image']['trigger']:
                             server = "netease" if cached_data['is_netease'] else "tencent"
                             lrc_image_url = f"{self.config['api']['url']}?server={server}&type=BotImage&id={music['id']}"
                             if self.config['api']['auth']:
                                 lrc_image_url += f"&auth={self.config['api']['auth']}"
-                            self.util.send_group_msg(self.auth, group_id, {"type": "image", "data": {"file": lrc_image_url, "timeout": 30, "cache": 0}})
-                            self.util.delete_msg(self.auth, cached_data['message_id'])
+                            msg_segments.append({
+                                "type": "image",
+                                "data": {"file": lrc_image_url, "timeout": 30, "cache": 0}
+                            })
                         elif selected_format == self.config['features']['voice']['trigger']:
-                            self.util.send_group_msg(self.auth, group_id, {"type": "record", "data": {"file": music['url']}})
-                            self.util.delete_msg(self.auth, cached_data['message_id'])
+                            msg_segments.append({
+                                "type": "record",
+                                "data": {"file": music['url']}
+                            })
                         else:
                             self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "无效的格式类型，请重新输入。"}})
                             return True
+
+                        success, _ = self.util.send_group_msg(self.auth, group_id, msg_segments, False, 45)
+
+                        if success and self.config['global_settings']['auto_recall']:
+                            self.util.delete_msg(self.auth, cached_data['message_id'])
                         self.delete_cache(cache_key)
                     else:
                         self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "无效的序号"}})
                 else:
-                    self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "输入格式错误，请重新输入"}})
+                    cached_data['error_count'] += 1
+                    self.save_to_cache(cache_key, cached_data)
+                    if cached_data['error_count'] >= 2:
+                        self.delete_cache(cache_key)
+                        success, _ = self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "格式错误次数过多，操作已取消。"}}, False, 15)
+                        if success and self.config['global_settings']['auto_recall']:
+                            self.util.delete_msg(self.auth, cached_data['message_id'])
+                    else:
+                        self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "输入格式错误，请重新输入"}})
                 return True
 
         return False
@@ -298,7 +365,7 @@ class Plugin(object):
 
 plugin_name = "音乐搜索插件"
 plugin_id = "cc.renil.music_search"
-plugin_version = "1.1.0"
+plugin_version = "1.1.2"
 plugin_author = "cnrenil和gpt"
 plugin_desc = "网易云和QQ音乐搜索回复插件"
 
