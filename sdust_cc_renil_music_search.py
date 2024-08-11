@@ -28,13 +28,16 @@ class Plugin(object):
     config = {
         'manager': 0,
         'cmd': {
-            'admin': '/音乐搜索',
-            'netease': '/网易云音乐',
-            'qq': '/QQ音乐'
+            'admin': '/音乐搜索'
         },
         'api': {
             'url': 'https://music.renil.cc/',
             'auth': 'V61TFH9RfxW8VSNM'
+        },
+        'sources': {
+            'netease': '/网易云音乐',
+            'tencent': '/QQ音乐',
+            'kugou': '/酷狗音乐'
         },
         'disabled': [],
         'features': {
@@ -150,25 +153,25 @@ class Plugin(object):
         cache_key = self.get_cache_key(group_id, user_id)
         cached_data = self.load_from_cache(cache_key)
 
-        if raw_message.startswith(self.config['cmd']['netease']) or raw_message.startswith(self.config['cmd']['qq']):
-            cmd_parts = raw_message.split(' ', 1)
-            if len(cmd_parts) == 1:
-                if not cached_data:
-                    self.save_to_cache(cache_key, {'stage': 'waiting_for_music_name', 'is_netease': raw_message.startswith(self.config['cmd']['netease'])})
-                    self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "请输入音乐名称"}})
+        for service_name, trigger_cmd in self.config['sources'].items():
+            if raw_message.startswith(trigger_cmd):
+                cmd_parts = raw_message.split(' ', 1)
+                if len(cmd_parts) == 1:
+                    if not cached_data:
+                        self.save_to_cache(cache_key, {'stage': 'waiting_for_music_name', 'service_name': service_name})
+                        self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "请输入音乐名称"}})
+                        return True
+                else:
+                    music_name = cmd_parts[1].strip()
+                    search_results = self.search_music(music_name, service_name)
+                    self.handle_search_results(search_results, group_id, cache_key, service_name, time, user_id)
                     return True
-            else:
-                music_name = cmd_parts[1].strip()
-                is_netease = raw_message.startswith(self.config['cmd']['netease'])
-                search_results = self.search_music(music_name, is_netease)
-                self.handle_search_results(search_results, group_id, cache_key, is_netease, time, user_id)
-                return True
 
         if cached_data:
             if cached_data['stage'] == 'waiting_for_music_name':
                 music_name = raw_message
-                search_results = self.search_music(music_name, cached_data['is_netease'])
-                self.handle_search_results(search_results, group_id, cache_key, cached_data['is_netease'], time, user_id)
+                search_results = self.search_music(music_name, cached_data['service_name'])
+                self.handle_search_results(search_results, group_id, cache_key, cached_data['service_name'], time, user_id)
                 return True
 
             if cached_data['stage'] == 'waiting_for_format_selection':
@@ -198,7 +201,7 @@ class Plugin(object):
                                 "data": {"text": music['lrc']}
                             })
                         elif selected_format == self.config['features']['lyrics_image']['trigger']:
-                            server = "netease" if cached_data['is_netease'] else "tencent"
+                            server = cached_data['service_name']
                             lrc_image_url = f"{self.config['api']['url']}?server={server}&type=BotImage&id={music['id']}"
                             if self.config['api']['auth']:
                                 lrc_image_url += f"&auth={self.config['api']['auth']}"
@@ -236,7 +239,7 @@ class Plugin(object):
 
         return False
 
-    def handle_search_results(self, search_results, group_id, cache_key, is_netease, time, user_id):
+    def handle_search_results(self, search_results, group_id, cache_key, service_name, time, user_id):
         if search_results:
             response_msg = ""
             for idx, music in enumerate(search_results):
@@ -249,7 +252,7 @@ class Plugin(object):
                     'stage': 'waiting_for_format_selection',
                     'music_name': search_results[0]['name'],
                     'search_results': search_results,
-                    'is_netease': is_netease,
+                    'service_name': service_name,
                     'message_id': message_id,
                     'time': time,
                     'user_id': user_id
@@ -257,8 +260,8 @@ class Plugin(object):
         else:
             self.util.send_group_msg(self.auth, group_id, {"type": "text", "data": {"text": "未找到相关音乐"}})
 
-    def search_music(self, music_name, is_netease):
-        server = "netease" if is_netease else "tencent"
+    def search_music(self, music_name, service_name):
+        server = service_name
         api_url = f"{self.config['api']['url']}?server={server}&type=search&id={music_name}"
         if self.config['api']['auth']:
             api_url += f"&auth={self.config['api']['auth']}"
@@ -365,7 +368,7 @@ class Plugin(object):
 
 plugin_name = "音乐搜索插件"
 plugin_id = "cc.renil.music_search"
-plugin_version = "1.1.2"
+plugin_version = "1.2.0"
 plugin_author = "cnrenil和gpt"
-plugin_desc = "网易云和QQ音乐搜索回复插件"
+plugin_desc = "音乐搜索回复插件"
 
