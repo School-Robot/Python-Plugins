@@ -367,8 +367,8 @@ class Plugin(object):
         self.save_config()
 
 plugin_name = "音乐搜索插件"
-plugin_id = "cc.renil.music_search"
+plugin_id = "sdust.renil.music_search"
 plugin_version = "1.2.0"
-plugin_author = "cnrenil和gpt"
+plugin_author = "cnrenil"
 plugin_desc = "音乐搜索回复插件"
 
