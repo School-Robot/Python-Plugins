@@ -1,8 +1,8 @@
 """
-查询指定城市未来7天的天气
+图片镜像
 """
 import os.path
-
+import os
 from PIL import Image
 
 plugin_name = "mirror_picture"
@@ -64,12 +64,11 @@ class Plugin(object):
             else:
                 self.util.send_group_msg(self.auth, group_id, "发送错误,请重试")
                 return False
-        return True
 
     def mirror_image(self, path):
         img = Image.open(path)
-        print(path)
-        save_path = path.split("\\")
+        sep = os.sep
+        save_path = path.split(sep)
         save_name = "mirrored_" + save_path[-1]
         pre_fix = "\\".join(save_path[:-1])
         final_path = os.path.join(pre_fix, save_name)
