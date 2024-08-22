@@ -4,7 +4,7 @@
 import os.path
 import os
 import requests
-from PIL import Image, ImageOps, ImageFilter, ImageEnhance, ImageChops, ImageSequence
+from PIL import Image, ImageOps, ImageFilter, ImageEnhance, ImageDraw, ImageSequence
 import numpy as np
 
 plugin_name = "mirror_picture"
@@ -35,12 +35,9 @@ class Plugin(object):
         self.util = util
         self.dir = dir
         self.operations = {
-            '翻转': lambda img: img.transpose(Image.FLIP_LEFT_RIGHT),
-            '镜像': lambda img: img.transpose(Image.FLIP_LEFT_RIGHT),
             '旋转90度': lambda img: img.rotate(270, expand=True),  # 90度顺时针
             '旋转180度': lambda img: img.rotate(180, expand=True),
             '旋转270度': lambda img: img.rotate(90, expand=True),   # 270度顺时针
-            '模糊': lambda img: img.filter(ImageFilter.GaussianBlur(5)),
             '锐化': lambda img: img.filter(ImageFilter.SHARPEN),
             '黑白': lambda img: img.convert('L'),
             '增加亮度': lambda img: ImageEnhance.Brightness(img).enhance(1.5),  # 增加亮度
@@ -63,13 +60,11 @@ class Plugin(object):
             '油画效果': lambda img: self.apply_oil_paint_effect(img),  # 油画效果
             '添加边框': lambda img: self.add_border(img, 10),  # 添加边框
             '高斯模糊': lambda img: img.filter(ImageFilter.GaussianBlur(5)),  # 高斯模糊
-            '动态模糊': lambda img: img.filter(ImageFilter.GaussianBlur(10)),  # 动态模糊
             '波浪效果': lambda img: self.apply_wave_effect(img),  # 波浪效果
             '漩涡效果': lambda img: self.apply_whirlpool_effect(img),  # 漩涡效果
             '增加色温': lambda img: self.increase_color_temperature(img),  # 增加色温
             '减少色温': lambda img: self.decrease_color_temperature(img),  # 减少色温
-            '增加色调': lambda img: self.increase_hue(img),  # 增加色调
-            '减少色调': lambda img: self.decrease_hue(img),  # 减少色调
+            '镜像': lambda img: img.transpose(Image.FLIP_LEFT_RIGHT),
         }
         self.log.info("Plugin register")
 
@@ -118,7 +113,10 @@ class Plugin(object):
                             os.remove(save_path)
                             os.remove(final_path)
                             self.log.debug(f"已移除图片{save_path}及其转换图片")
-                        return True
+                            return True
+                        else:
+                            self.log.error("图片发送超时")
+                            return False
                     else:
                         self.log.error(f"下载失败，状态码: {response.status_code}")
                         return False
@@ -162,26 +160,33 @@ class Plugin(object):
         return Image.fromarray(np.clip(noisy_image, 0, 255).astype(np.uint8))
     
     def apply_old_photo_effect(self, image):
-        # 老照片效果
-        sepia = np.array(image.convert('RGB'))
-        sepia = np.clip(sepia @ [[0.393, 0.769, 0.189],
-                                  [0.349, 0.686, 0.168],
-                                  [0.272, 0.534, 0.131]], 0, 255)
-        return Image.fromarray(sepia.astype(np.uint8))
-    
+        # 创建一个黄色遮罩
+        yellow_mask = Image.new('RGBA', image.size, (255, 255, 0, 50))  # 半透明黄色
+        # 将遮罩应用到原图上
+        img_with_mask = Image.alpha_composite(image.convert('RGBA'), yellow_mask)
+
+        return img_with_mask.convert('RGB')  # 转换回 RGB 模式
+ 
     def apply_mosaic(self, image, mosaic_size):
         # 马赛克效果
         small = image.resize((image.size[0] // mosaic_size, image.size[1] // mosaic_size), Image.NEAREST)
         return small.resize(image.size, Image.NEAREST)
     
     def apply_sketch_effect(self, image):
-        # 素描效果
-        gray = image.convert('L')
-        inverted = ImageOps.invert(gray)
-        blurred = inverted.filter(ImageFilter.GaussianBlur(15))
-        sketch = ImageChops.multiply(gray, blurred)
-        return sketch
-    
+        # 将图像转换为灰度图
+        gray_image = image.convert('L')
+
+        # 使用边缘检测
+        edge_image = gray_image.filter(ImageFilter.FIND_EDGES)
+
+        # 将边缘图像反转
+        inverted_edge_image = Image.eval(edge_image, lambda x: 255 - x)
+
+        # 将灰度图像与边缘图像结合
+        sketch_image = Image.blend(gray_image, inverted_edge_image, alpha=0.5)
+
+        return sketch_image
+ 
     def apply_watercolor_effect(self, image):
         # 水彩效果（简单实现）
         return image.filter(ImageFilter.SMOOTH)
@@ -236,12 +241,3 @@ class Plugin(object):
         r, g, b = image.split()
         b = b.point(lambda i: min(i * 1.1, 255))  # 增加蓝色通道
         return Image.merge("RGB", (r, g, b))
-    
-    def increase_hue(self, image):
-        # 增加色调
-        return image.convert('HSV').point(lambda p: (p[0] + 10) % 360).convert('RGB')
-    
-    def decrease_hue(self, image):
-        # 减少色调
-        return image.convert('HSV').point(lambda p: (p[0] - 10) % 360).convert('RGB')
-
