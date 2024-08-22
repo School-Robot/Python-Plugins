@@ -67,8 +67,10 @@ class Plugin(object):
                         final_path = self.mirror_image(save_path)
                         send_by_cq = self.util.cq_image(file=final_path, type="")
                         self.util.send_group_msg(self.auth, group_id, send_by_cq)
+                        return True
                     else:
                         self.log.error(f"下载失败，状态码: {response.status_code}")
+                        return False
 
                 else:
                     return False
