@@ -3,6 +3,8 @@
 """
 import os.path
 import os
+import uuid
+import requests
 from PIL import Image
 
 plugin_name = "mirror_picture"
@@ -50,28 +52,35 @@ class Plugin(object):
             target_message_id = raw_message.replace("[CQ:reply,id=", "")[:-3]
             flag, data = self.util.get_msg(self.auth, target_message_id)
             if flag:
-                target_message = data['raw_message']
-                if target_message.startswith("[CQ:image"):
-                    image_download_flag, image_path = self.util.get_image(self.auth, data['message'][0]['data']['file'])
-                    if image_download_flag:
-                        final_path = self.mirror_image(image_path['file'])
+                target_message = data['message'][0]
+                if target_message['type'] == "image":
+                    image_url = target_message['data']['url']
+                    response = requests.get(image_url)
+                    if response.status_code == 200:
+                        temp_dir = os.path.join(self.dir, 'tmp')
+                        os.makedirs(temp_dir, exist_ok=True)
+                        image_name = f"{uuid.uuid4()}.jpg"
+                        save_path = os.path.join(temp_dir, image_name)
+                        with open(save_path, 'wb') as file:
+                            file.write(response.content)
+                        self.log.info(f"图片已保存到: {save_path}")
+                        final_path = self.mirror_image(save_path)
                         send_by_cq = self.util.cq_image(file=final_path, type="")
                         self.util.send_group_msg(self.auth, group_id, send_by_cq)
+                        return True
                     else:
+                        self.log.error(f"下载失败，状态码: {response.status_code}")
                         return False
+
                 else:
                     return False
             else:
                 self.util.send_group_msg(self.auth, group_id, "发送错误,请重试")
                 return False
-
     def mirror_image(self, path):
         img = Image.open(path)
-        sep = os.sep
-        save_path = path.split(sep)
-        save_name = "mirrored_" + save_path[-1]
-        pre_fix = "\\".join(save_path[:-1])
-        final_path = os.path.join(pre_fix, save_name)
+        base, ext = os.path.splitext(path)
+        final_path = base + '_flipped' + ext
         mirror_img = img.transpose(Image.FLIP_LEFT_RIGHT)  # 水平镜像
         mirror_img.save(final_path)
         return final_path
