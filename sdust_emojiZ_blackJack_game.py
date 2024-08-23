@@ -78,18 +78,11 @@ class Plugin(object):
                 return False
             else:
                 now_user_cards = list(self.play_info[str(user_id)]['user_cards'])
-                now_system_cards = list(self.play_info[str(user_id)]['system_cards'])
                 now_cards = self.play_info[str(user_id)]["left_card"]
-                if sum(now_system_cards) <= 16:
-                    system_get_card_index = random.randint(0, len(now_cards) - 1)
-                    system_get_card_num = now_cards[system_get_card_index]
-                    now_system_cards.append(system_get_card_num)
-                    del now_cards[system_get_card_index]
                 user_get_card_index = random.randint(0, len(now_cards) - 1)
                 user_get_card_num = now_cards[user_get_card_index]
                 now_user_cards.append(user_get_card_num)
                 del now_cards[user_get_card_index]
-                self.play_info[str(user_id)]['system_cards'] = now_system_cards
                 self.play_info[str(user_id)]['user_cards'] = now_user_cards
                 self.play_info[str(user_id)]['row'] = self.play_info[str(user_id)]['row'] + 1
                 self.play_info[str(user_id)]["left_card"] = now_cards
@@ -99,14 +92,6 @@ class Plugin(object):
                                              f"{self.util.cq_reply(id=message_id)}"
                                              f"用户和{sum(self.play_info[str(user_id)]['user_cards'])}点爆牌,"
                                              f"庄家胜")
-
-                    del self.play_info[str(user_id)]
-                    return True
-                elif sum(self.play_info[str(user_id)]['system_cards']) > 21:
-                    self.util.send_group_msg(self.auth, group_id,
-                                             f"{self.util.cq_reply(id=message_id)},"
-                                             f"庄家和{sum(self.play_info[str(user_id)]['system_cards'])}点爆牌,"
-                                             f"用户胜")
                     del self.play_info[str(user_id)]
                     return True
                 else:
