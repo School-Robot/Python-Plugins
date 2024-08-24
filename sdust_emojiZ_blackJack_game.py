@@ -2,12 +2,11 @@ import random
 
 plugin_name = "blackjack_game"
 plugin_id = "sdust.emojiZ.BlackJack_game"
-plugin_version = "1.0.0"
+plugin_version = "1.0.1"
 plugin_author = "Z"
 plugin_desc = "21点游戏"
 
 
-# TODO 输了禁言
 # TODO 多人模式
 # TODO 对接用户系统金币开局
 
@@ -18,7 +17,7 @@ class Plugin(object):
                       'unregister': {'priority': 30000, 'func': 'unregister', 'desc': '卸载插件'},
                       'group_message': {'priority': 30000, 'func': 'group_message', 'desc': '群消息处理'}}
     plugin_commands = {}
-    plugin_auths = {'send_group_msg'}
+    plugin_auths = {'send_group_msg', 'set_group_ban'}
     auth = ''
     log = None
     status = None
@@ -31,6 +30,7 @@ class Plugin(object):
         self.bot = bot
         self.util = util
         self.dir = dir
+        self.developer_user_id = "291875783"
         self.play_info = {}
         self.max_player_at_same_time = 3
         self.log.info("Plugin register")
@@ -92,6 +92,8 @@ class Plugin(object):
                                              f"{self.util.cq_reply(id=message_id)}"
                                              f"用户和{sum(self.play_info[str(user_id)]['user_cards'])}点爆牌,"
                                              f"庄家胜")
+                    if str(user_id) != self.developer_user_id:
+                        self.util.set_group_ban(self.auth, group_id, user_id, 60)
                     del self.play_info[str(user_id)]
                     return True
                 else:
@@ -139,6 +141,8 @@ class Plugin(object):
                 need_send = f"当前用户手牌为:{self.play_info[str(user_id)]['user_cards']}\n当前庄家手牌为:{self.play_info[str(user_id)]['system_cards']}\n当前用户手牌点数和为:{sum(self.play_info[str(user_id)]['user_cards'])}\n当前庄家手牌点数和为:{sum(self.play_info[str(user_id)]['system_cards'])}\n用户胜利"
             else:
                 need_send = f"当前用户手牌为:{self.play_info[str(user_id)]['user_cards']}\n当前庄家手牌为:{self.play_info[str(user_id)]['system_cards']}\n当前用户手牌点数和为:{sum(self.play_info[str(user_id)]['user_cards'])}\n当前庄家手牌点数和为:{sum(self.play_info[str(user_id)]['system_cards'])}\n庄家胜利"
+                if str(user_id) != self.developer_user_id:
+                    self.util.set_group_ban(self.auth, group_id, user_id, 60)
             need_send = self.util.cq_reply(id=message_id) + need_send
             self.util.send_group_msg(self.auth, group_id, need_send)
             del self.play_info[str(user_id)]
