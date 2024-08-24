@@ -8,7 +8,7 @@ from PIL import Image, ImageOps, ImageFilter, ImageEnhance, ImageDraw, ImageSequ
 import numpy as np
 
 plugin_name = "mirror_picture"
-plugin_id = "sdust.emojiZ.mirror_picture"
+plugin_id = "sdust.renil.transform_image"
 plugin_version = "1.2.0"
 plugin_author = "Z & renil"
 plugin_desc = "图片镜像"
