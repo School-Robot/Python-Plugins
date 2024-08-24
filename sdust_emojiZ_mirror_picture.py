@@ -9,8 +9,8 @@ import numpy as np
 
 plugin_name = "mirror_picture"
 plugin_id = "sdust.emojiZ.mirror_picture"
-plugin_version = "1.0.0"
-plugin_author = "Z"
+plugin_version = "1.2.0"
+plugin_author = "Z & renil"
 plugin_desc = "图片镜像"
 
 
@@ -106,7 +106,12 @@ class Plugin(object):
                         with open(save_path, 'wb') as file:
                             file.write(response.content)
                         self.log.info(f"图片已保存到: {save_path}")
-                        final_path = self.transform_image(save_path, operation_key)
+                        try:
+                            final_path = self.transform_image(save_path, operation_key)
+                        except Exception as e:
+                            self.util.send_group_msg(self.auth, group_id, "接口错误，请联系开发人员")
+                            self.log.error(f"接口错误：{e}")
+                            return False
                         send_by_cq = self.util.cq_image(file=final_path, type="")
                         success, _ = self.util.send_group_msg(self.auth, group_id, send_by_cq)
                         if success:
