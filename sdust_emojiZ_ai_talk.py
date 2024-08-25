@@ -5,6 +5,7 @@ import configparser
 """"
 本插件需要openAI sdk 
 本插件基于deepbricks实现因此需要您的deepbriks sk
+
 """
 
 plugin_name = "ai_talk"
