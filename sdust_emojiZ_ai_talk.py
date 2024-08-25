@@ -3,17 +3,16 @@ import os
 import configparser
 
 """"
-本插件需要openAI sdk 与DashScope SDK
-以及阿里云通译千问模型sk
-使用前请确保以具备此三者
-并将讲sk写入配置文件
+本插件需要openAI sdk 
+本插件基于deepbricks实现因此需要您的deepbriks sk
+
 """
 
-plugin_name = "qwen_talk"
-plugin_id = "sdust.emojiZ.qwen_talk"
-plugin_version = "1.0.1"
+plugin_name = "ai_talk"
+plugin_id = "sdust.emojiZ.ai_talk"
+plugin_version = "2.0.0"
 plugin_author = "Z"
-plugin_desc = "一款基于通译千问大模型的AI对话插件"
+plugin_desc = "一款基于deepbricks的大模型AI对话插件"
 
 from openai import OpenAI
 
@@ -38,6 +37,7 @@ class Plugin(object):
         self.bot = bot
         self.util = util
         self.dir = dir
+        self.base_url = "https://api.deepbricks.ai/v1/"
         self.log.info("Plugin register")
 
     def enable(self, auth):
@@ -46,9 +46,9 @@ class Plugin(object):
         config_path = os.path.join(self.dir, config_file_name)
         config = configparser.ConfigParser()
         if not os.path.exists(config_path):
-            my_sk = ""
-            config['QwenSK'] = {
-                "qwen_sk": my_sk
+            my_sk = ""  # 此处填写你的sk
+            config['AI_SK'] = {
+                "ai_sk": my_sk
             }
             # 写入文件
             with open(config_path, 'w') as configfile:
@@ -56,7 +56,7 @@ class Plugin(object):
             self.api_key = my_sk
         else:
             config.read(config_path)
-            self.api_key = config.get("QwenSK", "qwen_sk", fallback="")
+            self.api_key = config.get("AI_SK", "ai_sk", fallback="")
         self.log.info("Plugin enable")
 
     def disable(self):
@@ -69,29 +69,24 @@ class Plugin(object):
                       font, sender):
         if self.api_key == "":
             return False
-        if raw_message.startswith("/gpt "):
-            reply_info = self.util.cq_reply(message_id)
+        at_bot = "[CQ:at,qq=" + str(self.bot.get_id()) + "]"
+        if raw_message.startswith(at_bot):
             try:
-                request_message = raw_message[5:]
-                client = OpenAI(
-                    api_key=self.api_key,
-                    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",  # 填写DashScope服务的base_url
-                )
-
+                raw_message = raw_message.replace(at_bot, "")
+                reply_info = self.util.cq_reply(message_id)
+                client = OpenAI(api_key=self.api_key, base_url=self.base_url)
                 completion = client.chat.completions.create(
-                    model="qwen-turbo",
+                    model="gpt-4o-mini",
                     messages=[
-                        {'role': 'user', 'content': request_message}],
-                    temperature=0.8,
-                    top_p=0.8,
-                    extra_body={"enable_search": True}
+                        {"role": "system", "content": "回复中不允许出现markdown语法"},
+                        {"role": "system", "content": "必须简洁简短的回复用户问题"},
+                        {"role": "user", "content": raw_message}
+                    ]
                 )
-                json_data = json.loads(completion.model_dump_json())
-                reply_info += json_data['choices'][0]['message']['content']
+                send_info = reply_info + completion.choices[0].message.content
+                self.util.send_group_msg(self.auth, group_id, send_info)
+                return True
             except Exception:
-                reply_info += "接口错误 请重试"
-                self.util.send_group_msg(self.auth, group_id, reply_info)
-                return False
-            self.util.send_group_msg(self.auth, group_id, reply_info)
-            return True
+                self.util.send_group_msg(self.auth, group_id, "接口错误")
+
         return False
