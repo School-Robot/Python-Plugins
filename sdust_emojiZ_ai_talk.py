@@ -16,8 +16,6 @@ plugin_desc = "一款基于deepbricks的大模型AI对话插件"
 
 from openai import OpenAI
 
-from openai import OpenAI
-
 
 class Plugin(object):
     plugin_methods = {'register': {'priority': 30000, 'func': 'register', 'desc': '注册插件'},
