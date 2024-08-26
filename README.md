@@ -113,4 +113,6 @@ API接口源码(修改后的meting-api)：[![GitHub](https://img.shields.io/badg
 
 接入SD API，生成图片
 
+配置文件：首次运行之后，请在`data/sdust.dayi.stable_diffusion/sd_config.ini`配置API
+
 用法：在`/sd 提示词`
