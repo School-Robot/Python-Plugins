@@ -10,6 +10,7 @@
 - 舔狗插件
 - AI对话插件
 - 音乐搜索插件
+- Stable Diffusion生成插件
 
 ## 插件说明
 
@@ -110,3 +111,12 @@ API接口源码(修改后的meting-api)：[![GitHub](https://img.shields.io/badg
 | 素描效果     | 水彩效果     | 油画效果     | 添加边框     |
 | 高斯模糊     | 波浪效果     | 漩涡效果     | 增加色温     |
 | 减少色温     | 镜像         |              |              |
+
+
+### Stable Diffusion生成插件
+
+接入SD API，生成图片
+
+配置文件：首次运行之后，请在`data/sdust.dayi.stable_diffusion/sd_config.ini`配置API
+
+用法：在`/sd 提示词`
