@@ -46,7 +46,7 @@ def group_message_func(time, self_id, sub_type, message_id, group_id, user_id, a
 
         if response.status_code != 200:
             logger.error("[SD]请求API出错")
-            raise Exception(f"Non-200 response: {str(response.text)}")
+            raise Exception(f"啊咧咧，啊咧咧，请求API出现了错误，是什么错误呢？原来是返回值不是200呀，是什么呢？当然是：Non-200 response: {str(response.text)}")
         
         logger.info("[SD]请求API成功")
 
