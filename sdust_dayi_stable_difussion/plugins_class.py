@@ -58,4 +58,4 @@ class Plugin(object):
           code,ret = group_message_func(time, self_id, sub_type, message_id, group_id, user_id, anonymous, message, raw_message, font, sender,self.util,self.dir,configer=self.configer,logger=self.log)
           if code:  
             self.util.send_group_msg(self.auth,group_id,ret)
-          return
+          return 0
