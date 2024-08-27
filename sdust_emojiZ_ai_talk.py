@@ -33,10 +33,13 @@ class Plugin(object):
     dir = None
 
     def register(self, logger, util, bot, dir):
+        self.model_list = ["gpt-3.5-turbo", "gpt-4o-mini", "gpt-4o", "gpt4-turbo"]
         self.log = logger
         self.bot = bot
         self.util = util
         self.dir = dir
+        self.admin = ""  # 管理qq
+        self.model = "gpt-4o-mini"
         self.base_url = "https://api.deepbricks.ai/v1/"
         self.log.info("Plugin register")
 
@@ -67,6 +70,22 @@ class Plugin(object):
 
     def group_message(self, time, self_id, sub_type, message_id, group_id, user_id, anonymous, message, raw_message,
                       font, sender):
+        if raw_message == "模型列表":
+            need_send = "当前可用模型有:\n" + "\n".join(self.model_list)
+            self.util.send_group_msg(self.auth, group_id, need_send)
+            return True
+        if raw_message.startswith("#gptc "):
+            if str(user_id) != self.admin:
+                self.util.send_group_msg(self.auth, group_id, "无权限")
+                return True
+            else:
+                target_model = raw_message.split(" ", 2)[-1]
+                if target_model not in self.model_list:
+                    self.util.send_group_msg(self.auth, group_id, "非可用模型,请发送\'模型列表\'获取所有可用模型")
+                    return True
+                self.model = target_model
+                self.util.send_group_msg(self.auth, group_id, f"切换成功,当前模型{self.model}")
+                return True
         if self.api_key == "":
             return False
         at_bot = "[CQ:at,qq=" + str(self.bot.get_id()) + "]"
@@ -75,15 +94,16 @@ class Plugin(object):
                 raw_message = raw_message.replace(at_bot, "")
                 reply_info = self.util.cq_reply(message_id)
                 client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+                model = self.model
                 completion = client.chat.completions.create(
-                    model="gpt-4o-mini",
+                    model=model,
                     messages=[
                         {"role": "system", "content": "回复中不允许出现markdown语法"},
                         {"role": "system", "content": "必须简洁简短的回复用户问题"},
                         {"role": "user", "content": raw_message}
                     ]
                 )
-                send_info = reply_info + completion.choices[0].message.content
+                send_info = reply_info + completion.choices[0].message.content + f"\n[+]当前使用模型:{model}"
                 self.util.send_group_msg(self.auth, group_id, send_info)
                 return True
             except Exception:

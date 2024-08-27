@@ -50,7 +50,11 @@
 ### AI对话插件
 群内艾特机器人账号加上`[你的问题]`即可与AI大模型对话
 
-首次使用需要安装OpenAI SDK 与DashScope SDK 并在deep bricks官网申请SK
+首次使用需要安装OpenAI SDK 与DashScope SDK 并在deep bricks官网申请SK，并在代码中填写sk和管理员QQ号
+
+发送`模型列表`查看当前可用模型
+
+发送`#gptc [模型名]`切换使用的模型
 
 ### 音乐搜索插件
 
