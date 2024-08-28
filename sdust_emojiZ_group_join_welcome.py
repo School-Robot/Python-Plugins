@@ -2,10 +2,9 @@
 入群欢迎设置
 """
 
-
-plugin_name = "group_join_welcome"
+plugin_name = "enhanced_auto_reply"
 plugin_id = "sdust.emojiZ.group_join_welcome"
-plugin_version = "1.0.0"
+plugin_version = "1.0.1"
 plugin_author = "Z"
 plugin_desc = "入群欢迎设置"
 
@@ -18,7 +17,7 @@ class Plugin(object):
                       'group_message': {'priority': 30000, 'func': 'group_message', 'desc': '群消息处理'},
                       'group_increase': {'priority': 30000, 'func': 'group_increase', 'desc': '入群事件处理'}
                       }
-    plugin_commands = {}
+    plugin_commands = {'group_join_welcome': 'group_join_welcome_command'}
     plugin_auths = {'send_group_msg', 'get_msg', 'get_image'}
     auth = ''
     log = None
@@ -31,8 +30,10 @@ class Plugin(object):
         self.log = logger
         self.bot = bot
         self.util = util
-        self.admin = "" #自己填一下
+        self.admin = ""
         self.dir = dir
+        if self.admin == "":
+            self.log.warning("未设置管理员,请在控制台使用 group_join_welcome set <QQ>设置管理员")
         self.log.info("Plugin register")
 
     def enable(self, auth):
@@ -46,6 +47,19 @@ class Plugin(object):
     def unregister(self):
         self.welcome_word = {}
         self.log.info("Plugin unregister")
+
+    def group_join_welcome_command(self, cmd):
+        if len(cmd) == 2:
+            if cmd[0] == 'set':
+                try:
+                    self.admin = str(cmd[-1])
+                    self.log.info("设置成功")
+                except ValueError:
+                    self.log.warning('参数错误')
+            else:
+                self.log.warning('参数错误')
+        else:
+            self.log.warning('参数错误')
 
     def group_increase(self, time, self_id, sub_type, group_id, operator_id, user_id):
         if str(group_id) in self.welcome_word.keys():
