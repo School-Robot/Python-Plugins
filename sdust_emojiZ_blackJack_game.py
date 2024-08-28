@@ -265,8 +265,9 @@ class Plugin(object):
                     need_send = self.util.cq_reply(
                         id=message_id) + need_send + "\n" + f"庄家和:{sum(self.single_play_info[str(user_id)]['system_cards'])}点爆牌" \
                                                             f"玩家胜"
-                    self.util.send_group_msg(self.auth, group_id, need_send)
+                    self.util.send_group_msg(self.auth, group_id, need_send
                     del self.single_play_info[str(user_id)]
+                    del self.play_info[str(user_id)]
                     return True
                 self.util.send_group_msg(self.auth, group_id, f"{self.util.cq_reply(id=message_id) + need_send}")
             if sum(self.single_play_info[str(user_id)]['user_cards']) > sum(
