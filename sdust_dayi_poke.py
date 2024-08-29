@@ -10,6 +10,9 @@ plugin_version = "0.0.1"
 plugin_author = "dayi"
 plugin_desc = "碰一碰"
 
+AT_REPLY= "大青蛙在这里"
+MOE="呱"
+
 
 class Plugin(object):
     plugin_methods = {
@@ -63,7 +66,7 @@ class Plugin(object):
           if message[0]['data']['qq']==str(self_id):
             if len(message)==1:
               self.util.send_group_msg(
-                        self.auth, group_id, "大青蛙在这里"
+                        self.auth, group_id, AT_REPLY
                     )
 
     def group_poke(self, time, self_id, group_id, user_id, target_id):
@@ -76,7 +79,7 @@ class Plugin(object):
                     hitokoto = data["hitokoto"]
                     source = data["from"]
                     message = (
-                        f"呱！{hitokoto}「{source}」"
+                        f"{MOE}！{hitokoto}「{source}」"
                     )
                     self.util.send_group_msg(self.auth, group_id, message)
                 except Exception as e:
