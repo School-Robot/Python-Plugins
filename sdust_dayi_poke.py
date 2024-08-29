@@ -58,7 +58,13 @@ class Plugin(object):
         self.log.info("Plugin unregister")
 
     def group_message(self, time, self_id, sub_type, message_id, group_id, user_id, anonymous, message, raw_message, font, sender):
-        pass
+        # print(message)
+        if message[0]['type']=='at':
+          if message[0]['data']['qq']==str(self_id):
+            if len(message)==1:
+              self.util.send_group_msg(
+                        self.auth, group_id, "大青蛙在这里"
+                    )
 
     def group_poke(self, time, self_id, group_id, user_id, target_id):
         self.log.info(f"接收到POKE 来自[{group_id}]的用户[{user_id}] 目标:f{target_id}")
