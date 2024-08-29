@@ -70,7 +70,7 @@ class Plugin(object):
                     )
 
     def group_poke(self, time, self_id, group_id, user_id, target_id):
-        self.log.info(f"接收到POKE 来自[{group_id}]的用户[{user_id}] 目标:f{target_id}")
+        self.log.info(f"接收到POKE 来自[{group_id}]的用户[{user_id}]碰了下[{target_id}]")
         if self_id == target_id:
             with httpx.Client() as client:
                 try:
