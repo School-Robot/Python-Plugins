@@ -12,18 +12,21 @@ def handle_reply(self, message_id, response):
     return response
 
 
-def add_word(self, message_id, group_id, user_id, message):
-    if self.word_manager.get_admin_level(user_id) < 1:
+def add_word(self, message_id, group_id, user_id, message, message_json):
+    """
+    添加词条
+    """
+    if self.word_manager.get_admin_level(user_id) <= 0:
         return True, handle_reply(self, message_id, "您没有权限添加词条")
 
     parts = message.split(" ", 2)
     if len(parts) != 3:
         return True, handle_reply(self, message_id, "格式错误，正确格式：#add 问题 答案")
-
+    
     question, answer = parts[1], parts[2]
     
     try:
-        self.word_manager.add_word(group_id, question, answer)
+        self.word_manager.add_word(group_id, question, answer, message_json)
         return True, handle_reply(self, message_id, f"词条'{question}'添加成功")
     except Exception as e:
         error_msg = f"添加词条失败：{str(e)}"
@@ -321,5 +324,6 @@ def get_command_help(self, command, user_id):
     if (command in ["del"] and not is_admin) or (command in ["admin"] and not is_super_admin):
         return f"您没有使用 '{command}' 命令的权限。"
 
+    return process_command_references(help_dict[command])
     return process_command_references(help_dict[command])
 

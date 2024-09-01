@@ -13,6 +13,7 @@ USER_AGENTS = [
 ]
 
 def download_image(url, save_dir):
+    print(f"正在下载图片：{url}")
     try:
         headers = {"User-Agent": random.choice(USER_AGENTS)}
         with httpx.Client() as client:

@@ -45,7 +45,7 @@ class Plugin(object):
     def enable(self, auth):
         self.auth = auth
         self.config = config_init(self.dir)
-        self.word_manager = WordManagement(self.dir, self.config)
+        self.word_manager = WordManagement(self.dir, self.config,self.log)
         self.log.info("Word Management Plugin enabled")
 
     def disable(self):
@@ -105,9 +105,7 @@ class Plugin(object):
     ):
         # 检查是否是命令
         if raw_message.startswith("#"):
-            result, response = self.execute_command(
-                message_id, group_id, user_id, raw_message
-            )
+            result, response = self.execute_command(message_id, group_id, user_id, raw_message,message)
         else:
             # 如果不是命令，则检查是否是词条或别名
             response = self.word_manager.check_and_respond(group_id, raw_message, self)
@@ -115,9 +113,9 @@ class Plugin(object):
         if result and response:
             self.util.send_group_msg(self.auth, group_id, response)
 
-    def execute_command(self, message_id, group_id, user_id, raw_message):
+    def execute_command(self, message_id, group_id, user_id, raw_message,message_json):
         if raw_message.startswith("#add "):
-            return add_word(self, message_id, group_id, user_id, raw_message)
+            return add_word(self, message_id, group_id, user_id, raw_message,message_json)
         elif raw_message.startswith("#addc alias add "):
             return add_alias(self, message_id, group_id, user_id, raw_message)
         elif raw_message.startswith("#addc alias del "):
