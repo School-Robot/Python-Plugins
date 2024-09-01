@@ -211,6 +211,6 @@ class Plugin(object):
 
 plugin_name="加群机器人验证+多群黑名单"
 plugin_id="jxufe.qiuyuyang.botCheck"
-plugin_version="1.0.0"
+plugin_version="1.1.0"
 plugin_author="qiuyuyang"
 plugin_desc="通过简单算术运算判断是否为真人"
