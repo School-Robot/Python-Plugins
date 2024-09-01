@@ -15,7 +15,7 @@ class Plugin(object):
         'group_request':{'priority':20000,'func':'group_request','desc':'加群请求'}
         }
     plugin_commands={'bot_check':'bot_check_command','help':'bot_check set <管理员QQ号> - 设置管理员'}
-    plugin_auths={'send_group_msg','get_msg','set_group_kick','set_group_ban','set_group_add_request','get_group_info','get_group_member_list','get_group_member_info'}
+    plugin_auths={'send_group_msg','get_msg','set_group_kick','set_group_ban','set_group_add_request','get_group_info','get_group_member_list','get_group_member_info','mark_private_msg_as_read'}
     auth=''
     log = None
     status = None
@@ -86,6 +86,7 @@ class Plugin(object):
             self.util.set_group_ban(self.auth,self.check_list[(user_id,raw_message)]['group_id'],user_id,0)
             self.util.send_group_msg(self.auth,self.check_list[(user_id,raw_message)]['group_id'],f"[CQ:at,qq={user_id}]认证成功,欢迎!")
             del self.check_list[(user_id,raw_message)]
+            self.util.mark_private_msg_as_read(self.auth,user_id)
     def group_message(self,time,self_id,sub_type,message_id,group_id,user_id,anonymous,message,raw_message,font,sender):
         role =sender['role']
         if user_id == self.config['manager'] or role=='owner' or role == 'admin':
@@ -186,6 +187,7 @@ class Plugin(object):
             if te.time() - self.check_list[i]['timestamp']>240:
                 self.util.set_group_kick(self.auth,self.check_list[i]['group_id'],i[0])
                 del self.check_list[i]
+                self.util.mark_private_msg_as_read(self.auth,i[0])
 
     def bot_check_command(self,cmd):
         if len(cmd)==2:
