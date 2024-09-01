@@ -40,7 +40,7 @@ class Plugin(object):
                 self.dict_list=json.loads(f.read())
         except:
             with open(os.path.join(self.dir, 'all_ban_id.json'),'w') as f:
-                f.write(json.dumps({789456123:{'who_ban':123456789,'reason':'广告'}}))
+                f.write(json.dumps({}))
         try:
             with open(os.path.join(self.dir,'config.json'),'r') as f:
                 self.config=json.loads(f.read())
@@ -145,9 +145,12 @@ class Plugin(object):
                                         self.util.set_group_kick(self.auth,i,j['user_id'])
                                     else:
                                         ban_check+=f"{j['user_id']} 原因:{self.dict_list[str(j['user_id'])]['reason']}\n"
-                            ban_check+=f"[CQ:at,qq={admin_at['admin_qq']}]"
+                            if ban_check=="以下qq已被拉黑,请管理尽快清理\n":
+                                continue
+                            ban_check=f"[CQ:at,qq={admin_at['admin_qq']}]\n"+ban_check
                             if bot_info != 'owner' and bot_info != 'admin':
-                                self.util.send_group_msg(self.auth,group_id,ban_check)
+                                self.util.send_group_msg(self.auth,i,ban_check)
+                            
                     else:
                         self.util.send_group_msg(self.auth,group_id,"qq号错误: \n格式:拉黑 <qq号或at> <原因>\n 仅支持管理员操作")
 
@@ -166,6 +169,13 @@ class Plugin(object):
                         self.util.send_group_msg(self.auth,group_id,"qq号错误: \n格式:拉白 <qq号>\n仅支持管理员操作")
                 else:
                     self.util.send_group_msg(self.auth,group_id,"参数错误: \n格式:拉白 <qq号>\n仅支持管理员操作")
+            elif raw_message == '拉黑名单':
+                ban_list = f"[CQ:at,qq={user_id}]"
+                for i in self.dict_list:
+                    ban_list+=f"\n\n{i}原因:{self.dict_list[i]['reason']}\n处理人:{self.dict_list[i]['who_ban']}"
+                self.util.send_group_msg(self.auth,group_id,ban_list)
+                return False
+
         return False
     def timeoutcheck(self):
         scheduler = BackgroundScheduler()
