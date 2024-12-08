@@ -46,44 +46,50 @@ class Plugin(object):
         self.log.info("Plugin unregister")
 
     def group_message(self,time,self_id,sub_type,message_id,group_id,user_id,anonymous,message,raw_message,font,sender):
+        url = "请添加url"
+        notes="\n\n没有你喜欢吃的?数量太少?快来添加吧,每天晚上十一点手动更新awa\n"+url
         if "吃什么" in raw_message:
             if raw_message == "吃什么":
                 ret = self.dict_list["msg"][random.randint(0,self.dict_list["total"]-1)]
-                ret_msg=f"[at,qq=user_id]\n吃{ret["foodName"] if ret['takeout']==True else "外卖\n"+ret["foodName"]}\n在{ret['location']}\n店名:{ret['storeName']}\n校区:{ret['campus']}"
-                self.auth.send_group_msg(self.auth,group_id,ret_msg)
+                ret_msg=f"[CQ:at,qq={user_id}]\n吃{ret["foodName"] if ret['takeout']==False else "外卖\n"+ret["foodName"]}\n在{ret['location']}\n店名:{ret['storeName']}\n校区:{ret['campus']}"
+                ret_msg+=notes
+                self.util.send_group_msg(self.auth,group_id,ret_msg)
                 return True
             elif re.match(r'在..吃什么外卖',raw_message):
                 new_dict = []
                 num = 0
-                for i in ret["msg"]:
+                for i in self.dict_list["msg"]:
                     if i['takeout']==True and i['campus']== raw_message[1:3]:
                         new_dict.append(i)
                         num+=1
                 if new_dict==[]:
                     return False
                 ret = new_dict[random.randint(0,num-1)]
-                ret_msg=f"[at,qq=user_id]\n吃{ret["foodName"] if ret['takeout']==True else "外卖\n"+ret["foodName"]}\n在{ret['location']}\n店名:{ret['storeName']}\n校区:{ret['campus']}"
-                self.auth.send_group_msg(self.auth,group_id,ret_msg)
+                ret_msg=f"[CQ:at,qq={user_id}]\n吃{ret["foodName"] if ret['takeout']==False else "外卖\n"+ret["foodName"]}\n在{ret['location']}\n店名:{ret['storeName']}\n校区:{ret['campus']}"
+                ret_msg+=notes
+                self.util.send_group_msg(self.auth,group_id,ret_msg)
                 return True
             elif re.match(r'在..吃什么',raw_message):
-                
                 new_dict = []
                 num = 0
-                for i in ret["msg"]:
-                    if i['takeout']==False and i['campus']== raw_message[1:3]:
+                for i in self.dict_list["msg"]:
+                    if i['campus']== raw_message[1:3]:
                         new_dict.append(i)
                         num+=1
                 if new_dict==[]:
                     return False
                 ret = new_dict[random.randint(0,num-1)]
-                ret_msg=f"[at,qq=user_id]\n吃{ret["foodName"] if ret['takeout']==True else "外卖\n"+ret["foodName"]}\n在{ret['location']}\n店名:{ret['storeName']}\n校区:{ret['campus']}"
-                self.auth.send_group_msg(self.auth,group_id,ret_msg)
+                ret_msg=f"[CQ:at,qq={user_id}]\n吃{ret["foodName"] if ret['takeout']==False else "外卖\n"+ret["foodName"]}\n在{ret['location']}\n店名:{ret['storeName']}\n校区:{ret['campus']}"
+                ret_msg+=notes
+                self.util.send_group_msg(self.auth,group_id,ret_msg)
                 return True
             elif raw_message=="吃什么帮助":
-                ret = "秋雨样awa\n\n吃什么:三校区随机\n在麦庐/枫林/蛟桥吃什么:线下该校区随机\n在麦庐/枫林/蛟桥吃什么外卖:外卖该校区随机"
+                ret_msg = "秋雨样awa\n\n吃什么:三校区随机\n在麦庐/枫林/蛟桥吃什么:线下该校区随机\n在麦庐/枫林/蛟桥吃什么外卖:外卖该校区随机"
+                ret_msg+=notes
+                self.util.send_group_msg(self.auth,group_id,ret_msg)
         return False
 plugin_name="今天吃什么分校区版"
 plugin_id="jxufe.qiuyuyang.eatWhat"
-plugin_version="1.0.0"
+plugin_version="1.1.0"
 plugin_author="qiuyuyang"
 plugin_desc="发送吃什么roll道菜"
