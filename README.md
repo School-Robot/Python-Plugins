@@ -13,6 +13,7 @@
 - 图片修改插件
 - Stable Diffusion生成插件
 - 入群验证+多群黑名单
+- 今天吃什么分校区版
 
 ## 插件说明
 
@@ -160,3 +161,15 @@ API接口源码(修改后的meting-api)：[![GitHub](https://img.shields.io/badg
 拉黑名单指令(插件管理员和各群管理员)
 
 `拉黑名单指令`
+
+### 今天吃什么分校区版
+
+发送`吃什么帮助`获取帮助
+
+在首次运行后数据需自行填入`[加载器根目录]/data/jxufe.qiuyuyang.eatWhat/eatWhat.json`
+
+`json`结构
+
+```json
+{"msg":[{"foodName":string,"storeName":string,"location":string,"campus":麦庐/枫林/蛟桥,"takeout":bool},],"total":int}
+```
