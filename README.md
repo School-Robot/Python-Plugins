@@ -170,6 +170,6 @@ API接口源码(修改后的meting-api)：[![GitHub](https://img.shields.io/badg
 
 `json`结构
 
-```json
+```
 {"msg":[{"foodName":string,"storeName":string,"location":string,"campus":麦庐/枫林/蛟桥,"takeout":bool},],"total":int}
 ```
