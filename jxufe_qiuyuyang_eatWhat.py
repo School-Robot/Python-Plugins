@@ -23,6 +23,7 @@ class Plugin(object):
     util = None
     dir = None
     dict_list={}
+    settings={}
     def register(self, logger, util, bot, dir):
         self.log = logger
         self.bot = bot
@@ -37,6 +38,12 @@ class Plugin(object):
         except:
             with open(os.path.join(self.dir, 'eatWhat.json'),'w') as f:
                 f.write(json.dumps({}))
+        try:
+            with open(os.path.join(self.dir,'settings.json'),"r") as f:
+                self.settings=json.loads(f.read())
+        except:
+            with open(os.path.join(self.dir, 'settings.json'),'w') as f:
+                f.write(json.dumps({"url":"","campus":[]}))
 
     def disable(self):
         self.dict_list={}
@@ -46,8 +53,8 @@ class Plugin(object):
         self.log.info("Plugin unregister")
 
     def group_message(self,time,self_id,sub_type,message_id,group_id,user_id,anonymous,message,raw_message,font,sender):
-        url = "请添加url"
-        notes="\n\n没有你喜欢吃的?数量太少?快来添加吧,每天晚上十一点手动更新awa\n"+url
+        url = self.settings['url']              #可以使用共享文档收集数据,在配置文件的url里填写共享文档的链接即可
+        notes=("\n\n没有你喜欢吃的?数量太少?快来添加吧,每天晚上十一点手动更新awa\n"+url) if url != "" else ""
         if "吃什么" in raw_message:
             if raw_message == "吃什么":
                 ret = self.dict_list["msg"][random.randint(0,self.dict_list["total"]-1)]
@@ -84,12 +91,16 @@ class Plugin(object):
                 self.util.send_group_msg(self.auth,group_id,ret_msg)
                 return True
             elif raw_message=="吃什么帮助":
-                ret_msg = "秋雨样awa\n\n吃什么:三校区随机\n在麦庐/枫林/蛟桥吃什么:线下该校区随机\n在麦庐/枫林/蛟桥吃什么外卖:外卖该校区随机"
-                ret_msg+=notes
+                if self.settings['campus'] == []:
+                    ret_msg="秋雨样awa\n\n请在插件数据目录中的settings.json中添加校区信息"
+                else:
+                    campus="/".join(i for i in self.settings['campus'])
+                    ret_msg = f"秋雨样awa\n\n吃什么:多校区随机\n在{campus}吃什么:线下该校区随机\n在{campus}吃什么外卖:外卖该校区随机\n\n"
+                    ret_msg+=notes
                 self.util.send_group_msg(self.auth,group_id,ret_msg)
         return False
 plugin_name="今天吃什么分校区版"
 plugin_id="jxufe.qiuyuyang.eatWhat"
-plugin_version="1.1.0"
+plugin_version="1.2.0"
 plugin_author="qiuyuyang"
 plugin_desc="发送吃什么roll道菜"

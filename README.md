@@ -166,10 +166,42 @@ API接口源码(修改后的meting-api)：[![GitHub](https://img.shields.io/badg
 
 发送`吃什么帮助`获取帮助
 
-在首次运行后数据需自行填入`[加载器根目录]/data/jxufe.qiuyuyang.eatWhat/eatWhat.json`
+在首次运行后
+- 数据需自行填入`[加载器根目录]/data/jxufe.qiuyuyang.eatWhat/eatWhat.json`
+- 配置文件需自行填入`[加载器根目录]/data/jxufe.qiuyuyang.eatWhat/settings.json`
 
-`json`结构
+`eatWhat.json`
 
 ```
 {"msg":[{"foodName":string,"storeName":string,"location":string,"campus":麦庐/枫林/蛟桥,"takeout":bool},],"total":int}
+```
+举个栗子
+```json
+{
+    "msg": [
+        {
+            "foodName": "烧鹅饭",
+            "storeName": "深井烧鹅",
+            "location": "麦庐二食堂一楼",
+            "campus": "麦庐",
+            "takeout": false
+        },
+        {
+            "foodName": "腊肉拌面",
+            "storeName": "朱家小馆",
+            "location": "新商业街二楼",
+            "campus": "麦庐",
+            "takeout": false
+        }],
+        "total": 2
+}
+```
+
+配置文件`settings.json`
+
+```json
+{
+    "url":"" //可配置数据收集的提示,在每一条消息后面都会显示，未配置则不会显示，可填入共享文档的url
+,"campus":["麦庐","枫林"] //填入校区即可
+}
 ```
