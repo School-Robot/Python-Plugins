@@ -1,5 +1,7 @@
+# 项目已迁移至 https://gitlab.mcsog.top/School-Robot/Python-Plugins
+
 # Python-Plugins
-用于 https://github.com/School-Robot/Plugin-Loader 的插件
+用于 https://gitlab.mcsog.top/School-Robot/Plugin-Loader 的插件
 
 ## 插件列表
 
